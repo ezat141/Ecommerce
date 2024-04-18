@@ -139,5 +139,5 @@ exports.verifyCode = asyncWrapper(async (req, res, next) => {
   await user.save();
 
   // Respond with success message
-  res.json({ message: "Verification successful" });
+  res.json({ status: httpStatusText.SUCCESS , message: "Verification successful" });
 });
