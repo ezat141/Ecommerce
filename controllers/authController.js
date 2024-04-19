@@ -98,6 +98,17 @@ exports.loginUser = asyncWrapper(async (req, res, next) => {
     const error = appError.create("user not found", 400, httpStatusText.FAIL);
     return next(error);
   }
+
+  // Check if the user is approved
+  if (!user.users_approve) {
+    const error = appError.create(
+      "Your account has not been approved yet",
+      400,
+      httpStatusText.FAIL
+    );
+    return next(error);
+  }
+
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     const error = appError.create("invalid password", 400, httpStatusText.FAIL);
@@ -107,7 +118,7 @@ exports.loginUser = asyncWrapper(async (req, res, next) => {
   const token = await generateJWT({
     userId: user._id,
   });
-  res.status(200).json({ status: httpStatusText.SUCCESS, data: { token } });
+  res.status(200).json({ status: httpStatusText.SUCCESS, data: { token, user } });
 });
 
 exports.verifyCode = asyncWrapper(async (req, res, next) => {
@@ -139,5 +150,8 @@ exports.verifyCode = asyncWrapper(async (req, res, next) => {
   await user.save();
 
   // Respond with success message
-  res.json({ status: httpStatusText.SUCCESS , message: "Verification successful" });
+  res.json({
+    status: httpStatusText.SUCCESS,
+    message: "Verification successful",
+  });
 });
