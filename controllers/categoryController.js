@@ -1,6 +1,8 @@
 // categoryController.js
 const Category = require('../models/Category');
 const { validationResult } = require('express-validator');
+const cloudinary = require("../utils/cloudinary");
+const fs = require('fs');
 
 
 
@@ -39,20 +41,36 @@ exports.createCategory = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { category_name, category_name_ar, image } = req.body;
-    const newCategory = new Category({
-        category_name,
-        category_name_ar,
-        image: req.file ? req.file.path : null
-    });
     try {
-        await newCategory.save();
-        res.status(201).json(newCategory);
-    } catch (error) {
-        res.status(400).json({
-            message: error.message
+        // Check if file is uploaded
+        if (!req.file) {
+
+            return res.status(400).json({ message: 'Image file is required' });
+        }
+    
+        // Upload file to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path);
+    
+        // Remove file from local storage
+        fs.unlinkSync(req.file.path);
+    
+        // Create category with Cloudinary image URL
+        const { category_name, category_name_ar } = req.body;
+        const newCategory = new Category({
+
+            category_name,
+            category_name_ar,
+            image: result.secure_url // Use the Cloudinary image URL
         });
-        
+    
+        // Save category to database
+        await newCategory.save();
+    
+        // Return success response
+        res.status(201).json({ status: 'success', data: newCategory });
+    } catch (error) {
+        console.error('Error creating category:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 

@@ -1,23 +1,27 @@
 // categoryRoutes.js
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
+// const multer = require('multer');
+// const cloudinary = require("../utils/cloudinary");
+
 const { validateCategory } = require('../middleware/validationMiddleware');
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
+const upload = require('../middleware/multer');
 const categoryController = require('../controllers/categoryController');
 
 
 // Multer configuration for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
-    }
-});
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'uploads/');
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+//     }
+// });
 
-const upload = multer({storage: storage});
+// const upload = multer({storage: storage});
+
 
 // Define routes
 router.get('/', categoryController.getAllCategories);
