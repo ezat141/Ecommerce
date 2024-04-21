@@ -42,10 +42,17 @@ exports.createProduct = async (req, res) => {
     }
     
     const product = new Product({
-        name: req.body.name,
-        price: req.body.price,
-        description: req.body.description,
-        image: req.file ? req.file.path : null
+        product_name: req.body.product_name,
+        product_name_ar: req.body.product_name_ar,
+        product_desc: req.body.product_desc,
+        product_desc_ar: req.body.product_desc_ar,
+        product_desc_ar: req.body.product_desc_ar,
+        image: req.file ? req.file.path : null,
+        product_count: req.body.product_count,
+        product_active: req.body.product_active,
+        product_price: req.body.product_price,
+        product_discount: req.body.product_discount,
+        product_cat: req.body.product_cat
     });
     try {
         const newProduct = await product.save();
