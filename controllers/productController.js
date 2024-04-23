@@ -4,12 +4,13 @@ const Product = require('../models/Product');
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
-    const query = req.query;
-    const limit = parseInt(query.limit) || 10;
-    const page = parseInt(query.page) || 1;
-    const skip = (page -1) * limit;
+    // const query = req.query;
+    // const limit = parseInt(query.limit) || 10;
+    // const page = parseInt(query.page) || 1;
+    // const skip = (page -1) * limit;
     try {
-        const products = await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
+        const products = await Product.find();
+        // await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({

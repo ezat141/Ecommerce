@@ -7,8 +7,8 @@ const cors = require("cors");
 const httpStatusText = require("./utils/httpStatusText");
 
 //const badyParser = require('bady-parser');
-const homeRoutes = require('./routes/homeRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
+const homeRoutes = require("./routes/homeRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
@@ -27,8 +27,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use("/auth", authRoutes);
 app.use("/forgetPassword", forgetPasswordRoutes);
-app.use('/', homeRoutes);
-app.use('/categories', categoryRoutes);
+app.use("/", homeRoutes);
+app.use("/categories", categoryRoutes);
 app.use("/products", productRoutes);
 app.use("/users", userRoutes);
 app.use("/orders", orderRoutes); // Add order routes
