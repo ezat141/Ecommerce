@@ -9,7 +9,7 @@ exports.getAllProducts = async (req, res) => {
     // const page = parseInt(query.page) || 1;
     // const skip = (page -1) * limit;
     try {
-        const products = await Product.find();
+        const products = await Product.find({}, {"__v": false});
         // await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
         res.status(200).json(products);
     } catch (error) {

@@ -9,7 +9,7 @@ const fs = require('fs');
 // Get all categories
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await Category.find();
+        const categories = await Category.find({}, {"__v": false});
         res.status(200).json(categories);
     } catch (error) {
         res.status(500).json({
