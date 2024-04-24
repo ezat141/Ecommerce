@@ -1,22 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
+// const multer = require('multer');
 const { validateProduct } = require('../middleware/validationMiddleware');
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
-
+const upload = require('../middleware/multer');
 const productController = require('../controllers/productController');
 
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
-    }
-});
+// // Multer configuration for file uploads
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'uploads/');
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+//     }
+// });
 
-const upload = multer({storage: storage});
+// const upload = multer({storage: storage});
 
 // Routes
 router.get('/', productController.getAllProducts);

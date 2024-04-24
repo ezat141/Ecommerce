@@ -9,7 +9,7 @@ const Product = require('../models/Product');
 router.get('/home', async (req, res) => {
     try {
         const categories = await Category.find({}, {"__v": false});
-        const products = await Product.find({}, {"__v": false});
+        const products = await Product.find({ product_discount: { $ne: 0 } }, {"__v": false});
         const homeData = { categories, products };
         res.json({ status: httpStatusText.SUCCESS, data: homeData });
     } catch (error) {

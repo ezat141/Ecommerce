@@ -1,5 +1,8 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
+const cloudinary = require("../utils/cloudinary");
+const fs = require('fs');
+
 
 
 // Get all products
@@ -42,27 +45,41 @@ exports.createProduct = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
     
-    const product = new Product({
-        product_name: req.body.product_name,
-        product_name_ar: req.body.product_name_ar,
-        product_desc: req.body.product_desc,
-        product_desc_ar: req.body.product_desc_ar,
-        product_desc_ar: req.body.product_desc_ar,
-        image: req.file ? req.file.path : null,
-        product_count: req.body.product_count,
-        product_active: req.body.product_active,
-        product_price: req.body.product_price,
-        product_discount: req.body.product_discount,
-        product_cat: req.body.product_cat
-    });
+    
     try {
-        const newProduct = await product.save();
-        res.status(201).json(newProduct);
+        // Check if file is uploaded
+        if (!req.file) {
+
+            return res.status(400).json({ message: 'Image file is required' });
+        }
+    
+        // Upload file to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path);
+    
+        // Remove file from local storage
+        fs.unlinkSync(req.file.path);
+
+        const { product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_price, product_discount, product_cat} = req.body;
+
+        const newProduct = new Product({
+            product_name,
+            product_name_ar,
+            product_desc,
+            product_desc_ar,
+            image: result.secure_url, // Use the Cloudinary image URL
+            // image: req.file ? req.file.path : null,
+            product_count,
+            product_price,
+            product_discount,
+            product_cat
+        });
+
+        await newProduct.save();
+        res.status(201).json({ status: 'success', data: newProduct });
         
     } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+        console.error('Error creating product:', error);
+        res.status(500).json({ message: 'Internal server error' });
         
     }
 };
