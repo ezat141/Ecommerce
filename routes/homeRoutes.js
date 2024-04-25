@@ -11,7 +11,7 @@ router.get('/home', async (req, res) => {
         const categories = await Category.find({}, {"__v": false});
         const products = await Product.find({ product_discount: { $ne: 0 } }, {"__v": false});
         const homeData = { categories, products };
-        res.json({ status: httpStatusText.SUCCESS, data: homeData });
+        res.json({ status: httpStatusText.SUCCESS,  categories, products});
     } catch (error) {
                 console.error('Error in /home route:', error); // Log the error to the console
 
