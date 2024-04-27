@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
+const httpStatusText = require("../utils/httpStatusText");
 const cloudinary = require("../utils/cloudinary");
 const fs = require('fs');
 
@@ -19,6 +20,21 @@ exports.getAllProducts = async (req, res) => {
         res.status(500).json({
             message: error.message
         });
+    }
+};
+
+// Controller function to get products by category ID
+exports.getProductsByCategory = async (req, res) => {
+    try {
+        const { category_id } = req.body; // Assuming category_id is passed in the request body
+        
+        // Fetch products filtered by the provided category ID
+        const data = await Product.find({ product_cat: category_id }, {"__v": false});
+        
+        res.status(200).json({status: httpStatusText.SUCCESS, data} );
+    } catch (error) {
+        console.error('Error fetching products by category:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
 
