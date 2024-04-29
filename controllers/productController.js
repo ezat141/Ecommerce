@@ -1,7 +1,12 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
+const Favorite = require('../models/favorite');
+const Category = require('../models/Category');
 const httpStatusText = require("../utils/httpStatusText");
 const cloudinary = require("../utils/cloudinary");
+// const pipeline = require('../utils/pipeline');
+const mongoose = require("mongoose");
+
 const fs = require('fs');
 
 
@@ -24,19 +29,56 @@ exports.getAllProducts = async (req, res) => {
 };
 
 // Controller function to get products by category ID
+// exports.getProductsByCategory = async (req, res) => {
+//     try {
+//         const { category_id } = req.body; // Assuming category_id is passed in the request body
+        
+//         // Fetch products filtered by the provided category ID
+//         const data = await Product.find({ product_cat: category_id }, {"__v": false});
+        
+//         res.status(200).json({status: httpStatusText.SUCCESS, data} );
+//     } catch (error) {
+//         console.error('Error fetching products by category:', error);
+//         res.status(500).json({ success: false, message: 'Internal Server Error' });
+//     }
+// };
+
 exports.getProductsByCategory = async (req, res) => {
     try {
-        const { category_id } = req.body; // Assuming category_id is passed in the request body
+        const { category_id, user_id } = req.body; // Assuming category_id and user_id are passed in the request body
         
+        // Fetch favorite products of the user
+        const favorites = await Favorite.find({ favorite_usersid: user_id }, { favorite_productsid: 1 });
+        
+        // Extract the favorite product IDs from the favorites array
+        const favoriteProductIds = favorites.map(fav => fav.favorite_productsid.toString());
+        console.log('Favorite Product IDs:', favoriteProductIds); // Log the favorite product IDs for debugging
+
+
         // Fetch products filtered by the provided category ID
-        const data = await Product.find({ product_cat: category_id }, {"__v": false});
+        const products = await Product.find({ product_cat: category_id }, {"__v": false});
         
-        res.status(200).json({status: httpStatusText.SUCCESS, data} );
+        // Iterate over the products and mark them as favorite if they exist in the user's favorites
+        const productsWithFavorite = products.map(product => {
+            const isFavorite = favoriteProductIds.includes(product._id.toString());
+            console.log(`Product ${product._id}: Favorite - ${isFavorite}`);
+
+
+            return {
+                ...product.toObject(),
+                favorite: isFavorite
+            };
+        });
+        
+        res.status(200).json({status: httpStatusText.SUCCESS, data: productsWithFavorite});
     } catch (error) {
         console.error('Error fetching products by category:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
+
+
+
 
 // Get a single product by ID
 exports.getProductById = async (req, res) => {

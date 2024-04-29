@@ -44,6 +44,10 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
         required: true
+    },
+    favorite: {
+        type: Boolean,
+        default: false // Initially set to false
     }
     
     
