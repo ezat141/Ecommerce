@@ -24,10 +24,10 @@ exports.addToFavorites = async (req, res) => {
         // Update the favorite field in the Product model
         // await Product.updateOne({ _id: favorite_productsid }, { favorite: true });
 
-        res.status(201).json({ success: true, favorite });
+        res.status(201).json({ status: httpStatusText.SUCCESS, favorite });
     } catch (error) {
         console.error('Error adding to favorites:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.status(500).json({ status: false, message: 'Internal Server Error' });
     }
 };
 
@@ -49,7 +49,7 @@ exports.removeFromFavorites = async (req, res) => {
         // Update the favorite field in the Product model
         // await Product.updateOne({ _id: favorite_productsid }, { favorite: false });
 
-        res.status(200).json({ success: true, message: 'Product removed from favorites' });
+        res.status(200).json({ status: httpStatusText.SUCCESS, message: 'Product removed from favorites' });
     } catch (error) {
         console.error('Error removing from favorites:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
