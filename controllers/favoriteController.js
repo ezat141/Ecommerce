@@ -1,5 +1,7 @@
 const Favorite = require('../models/favorite');
 const Product = require('../models/Product');
+const httpStatusText = require("../utils/httpStatusText");
+
 
 // Controller function to add a product to favorites
 exports.addToFavorites = async (req, res) => {
