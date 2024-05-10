@@ -100,14 +100,14 @@ exports.loginUser = asyncWrapper(async (req, res, next) => {
   }
 
   // Check if the user is approved
-  if (!user.users_approve) {
-    const error = appError.create(
-      "Your account has not been approved yet",
-      400,
-      httpStatusText.FAIL
-    );
-    return next(error);
-  }
+  // if (!user.users_approve) {
+  //   const error = appError.create(
+  //     "Your account has not been approved yet",
+  //     400,
+  //     httpStatusText.FAIL
+  //   );
+  //   return next(error);
+  // }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
