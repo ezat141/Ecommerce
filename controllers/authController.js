@@ -118,7 +118,9 @@ exports.loginUser = asyncWrapper(async (req, res, next) => {
   const token = await generateJWT({
     userId: user._id,
   });
-  res.status(200).json({ status: httpStatusText.SUCCESS, data: { token, user } });
+  res
+    .status(200)
+    .json({ status: httpStatusText.SUCCESS, data: { token, user } });
 });
 
 exports.verifyCode = asyncWrapper(async (req, res, next) => {
@@ -153,5 +155,32 @@ exports.verifyCode = asyncWrapper(async (req, res, next) => {
   res.json({
     status: httpStatusText.SUCCESS,
     message: "Verification successful",
+  });
+});
+
+exports.resendverifycodesignup = asyncWrapper(async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    const error = appError.create("User not found", 404, httpStatusText.FAIL);
+    return next(error);
+  }
+  // Generate a new OTP
+  const otp = generateOTP();
+  // Update the user's verification code
+  user.users_verifycode = otp;
+  await user.save();
+  // Send OTP to the user's email
+  try {
+    await sendEmail(email, otp);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    // Handle email sending error
+    return next(error);
+  }
+
+  res.json({
+    status: httpStatusText.SUCCESS,
+    message: "New verification code sent successfully",
   });
 });
