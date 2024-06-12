@@ -39,7 +39,7 @@ exports.removeFromFavorites = async (req, res) => {
         const { favorite_id } = req.body;
 
         // Check if the favorite exists
-        const existingFavorite = await Favorite.findById(favorite_id);
+        const existingFavorite = await Favorite.findById({_id: favorite_id});
 
         if (!existingFavorite) {
             return res.status(400).json({ success: false, message: 'Product not found in favorites' });
@@ -48,10 +48,10 @@ exports.removeFromFavorites = async (req, res) => {
         // Extract favorite_usersid and favorite_productsid from existingFavorite
         const {favorite_productsid} = existingFavorite;
         // Remove the favorite
-        await Favorite.findByIdAndDelete(favorite_id);
+        await Favorite.findByIdAndDelete({_id: favorite_id});
 
         // Update the favorite field in the Product model
-        await Product.findByIdAndUpdate(favorite_productsid, { favorite: false });
+        await Product.findByIdAndUpdate({id_: favorite_productsid}, { favorite: false });
 
         res.status(200).json({ status: httpStatusText.SUCCESS, message: 'Product removed from favorites' });
     } catch (error) {
