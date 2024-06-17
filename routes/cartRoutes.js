@@ -1,20 +1,21 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const cartController = require('../controllers/cartController');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const cartController = require("../controllers/cartController");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
+// Route to get the cart for a user
+router.post("/getCart", cartController.getCart);
 
-// Get the user's cart
-router.get('/', authMiddleware, cartController.getCart);
+// Route to add a product to the cart
+router.post("/addToCart", cartController.addToCart);
 
-// Add an item to the cart
-router.post('/', authMiddleware, cartController.addToCart);
+// Route to update the quantity of a product in the cart
+router.post("/updateCartItem", cartController.updateCartItem);
 
-// Update an item in the cart
-router.put('/', authMiddleware, cartController.updateCartItem);
+// Route to remove a product from the cart
+router.post("/removeCartItem", cartController.removeCartItem);
 
-// Remove an item from the cart
-router.delete('/:productId', authMiddleware, cartController.removeCartItem);
-
+// Route to get the count of a specific product in the cart
+router.post("/getCountItems", cartController.getCountItems);
 
 module.exports = router;
