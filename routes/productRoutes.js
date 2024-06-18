@@ -23,8 +23,10 @@ router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
 // Endpoint to get products by category ID
 router.post('/category', productController.getProductsByCategory);
+router.post('/search', productController.searchProducts);
 router.post('/', authMiddleware, adminMiddleware, upload.single('image'), validateProduct, productController.createProduct);
 router.put('/:id', authMiddleware, adminMiddleware, upload.single('image'), validateProduct, productController.updateProduct);
 router.delete('/:id', authMiddleware, adminMiddleware, upload.single('image'), productController.deleteProduct);
+
 
 module.exports = router;

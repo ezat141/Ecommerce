@@ -181,3 +181,34 @@ exports.deleteProduct = async (req, res) =>{
     }
 
 };
+
+exports.searchProducts = async (req, res) => {
+    try {
+        const { query } = req.body; // Assuming the search query is passed in the request body
+        
+        if (!query) {
+            return res.status(400).json({
+                status: httpStatusText.FAIL,
+                message: 'Search query is required'
+            });
+        }
+
+        // Perform the search
+        const products = await Product.find({
+            $or: [
+                { product_name: { $regex: query, $options: 'i' } },
+                { product_name_ar: { $regex: query, $options: 'i' } }
+            ]
+        }, { "__v": false });
+
+        res.status(200).json({
+            status: httpStatusText.SUCCESS,
+            data: products
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: httpStatusText.FAIL,
+            message: error.message
+        });
+    }
+};
