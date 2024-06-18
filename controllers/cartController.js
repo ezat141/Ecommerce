@@ -1,21 +1,37 @@
 const Cart = require('../models/cartModel');
 const httpStatusText = require("../utils/httpStatusText");
+const mongoose = require('mongoose');
 
-exports.getCart = async(req, res) => {
+
+
+exports.getCart = async (req, res) => {
     try {
-        const cart = await Cart.findOne({user: req.user.id}).populate('items.product');
+        const { cart_usersid } = req.body;
 
+        // Find the cart for the user and populate product details
+        const cart = await Cart.findOne({ user: cart_usersid }).populate('items.product');
 
+        if (!cart) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Cart not found' });
+        }
 
-        res.status(200).json(cart);
-        
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
+        // Calculate total price and item count
+        const itemsPrice = cart.items.reduce((sum, item) => sum + item.product.product_price * item.quantity, 0);
+        const itemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
+
+        res.status(200).json({
+            status: httpStatusText.SUCCESS,
+            cart: {
+                items: cart.items,
+                totalPrice: itemsPrice,
+                totalCount: itemCount
+            }
         });
-        
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
 };
+
 
 // exports.addToCart = async (req, res) => {
 //     try {
