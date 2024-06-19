@@ -15,6 +15,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const authRoutes = require("./routes/authRoutes");
 const forgetPasswordRoutes = require("./routes/forgetPasswordRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
+const addressRoutes = require("./routes/addressRoutes");
 
 const cartRoutes = require("./routes/cartRoutes");
 const { authMiddleware } = require("./middleware/authMiddleware");
@@ -33,6 +34,7 @@ app.use("/categories", categoryRoutes);
 app.use("/products", productRoutes);
 app.use("/users", userRoutes);
 app.use("/orders", orderRoutes); // Add order routes
+app.use("/address", addressRoutes);
 app.use("/cart", cartRoutes);
 app.use("/favorites", favoriteRoutes);
 // MongoDB Connection
