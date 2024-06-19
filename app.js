@@ -16,6 +16,7 @@ const authRoutes = require("./routes/authRoutes");
 const forgetPasswordRoutes = require("./routes/forgetPasswordRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
 const addressRoutes = require("./routes/addressRoutes");
+const couponRoutes = require("./routes/couponRoutes");
 
 const cartRoutes = require("./routes/cartRoutes");
 const { authMiddleware } = require("./middleware/authMiddleware");
@@ -37,6 +38,8 @@ app.use("/orders", orderRoutes); // Add order routes
 app.use("/address", addressRoutes);
 app.use("/cart", cartRoutes);
 app.use("/favorites", favoriteRoutes);
+app.use("/coupons", couponRoutes); // Add this line
+
 // MongoDB Connection
 mongoose
   .connect(url)
