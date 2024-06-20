@@ -9,7 +9,7 @@ exports.getCart = async (req, res) => {
         const { cart_usersid } = req.body;
 
         // Find the cart for the user and populate product details
-        const cart = await Cart.findOne({ user: cart_usersid }).populate('items.product');
+        const cart = await Cart.findOne({ user: cart_usersid, cart_orders: 0 }).populate('items.product');
 
         if (!cart) {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'Cart not found' });
@@ -62,7 +62,7 @@ exports.getCart = async (req, res) => {
 exports.addToCart = async (req, res) => {
     try {
         const { cart_usersid, cart_productsid } = req.body;
-        let cart = await Cart.findOne({ user: cart_usersid });
+        let cart = await Cart.findOne({ user: cart_usersid, cart_orders: 0 });
 
         if (cart) {
             // Check if the product is already in the cart
@@ -89,35 +89,35 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-exports.updateCartItem = async (req, res) => {
-    try {
-        const {productId, quantity} = req.body;
-        const cart = await Cart.findOneAndUpdate(
-            {
-                user: req.user.id,
-                'items.product': productId
-            },
-            {
-                $set: { 'items.$.quantity': quantity }
-            },
-            {
-                new: true
-            }
-        );
-        res.json(cart);
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
+// exports.updateCartItem = async (req, res) => {
+//     try {
+//         const {productId, quantity} = req.body;
+//         const cart = await Cart.findOneAndUpdate(
+//             {
+//                 user: req.user.id,
+//                 'items.product': productId
+//             },
+//             {
+//                 $set: { 'items.$.quantity': quantity }
+//             },
+//             {
+//                 new: true
+//             }
+//         );
+//         res.json(cart);
+//     } catch (error) {
+//         res.status(500).json({
+//             message: error.message
+//         });
 
-    }    
-};
+//     }    
+// };
 
 exports.removeCartItem = async (req, res) => {
     try {
         const { cart_usersid, cart_productsid } = req.body;
         const cart = await Cart.findOneAndUpdate(
-            { user: cart_usersid, 'items.product': cart_productsid },
+            { user: cart_usersid, cart_orders: 0, 'items.product': cart_productsid },
             { $inc: { 'items.$.quantity': -1 } },
             { new: true }
         );
@@ -142,7 +142,7 @@ exports.getCountItems = async (req, res) => {
         const { cart_usersid, cart_productsid } = req.body;
 
         // Find the cart for the user
-        const cart = await Cart.findOne({ user: cart_usersid });
+        const cart = await Cart.findOne({ user: cart_usersid, cart_orders: 0 });
 
         if (!cart) {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'Cart not found' });

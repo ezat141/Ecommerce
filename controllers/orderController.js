@@ -1,125 +1,53 @@
-const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Order = require('../models/orderModel');
+const Coupon = require('../models/couponModel');
+const Cart = require('../models/cartModel');
+const httpStatusText = require("../utils/httpStatusText");
 
-
-// Create a new order
-// exports.createOrder = async (req, res) => {
-//     try {
-//         const {products, total} = req.body;
-//         const order = new Order({
-//             user: req.user.id, // Assuming you have implemented user authentication
-//             products,
-//             total
-//         });
-//         const newOrder = await order.save();
-//         res.status(201).json(newOrder);
-        
-//     } catch (error) {
-//         res.status(400).json({
-//             message: error.message
-//         });
-        
-//     }
-// };
-
-exports.createOrder = async (req, res) => {
+exports.checkout = async (req, res) => {
+    const { orders_usersid, orders_addressid, orders_type, orders_pricedelivery, orders_price, orders_couponid, orders_paymeentmethod } = req.body;
+    
     try {
-        const {products} = req.body;
+        let orders_totalprice = orders_price;
+        let couponDiscount = 0;
 
-        // Fetch prices of the products from the database
-        const productPrices = await Product.find({_id: {$in: products}}, {price: 1});
+        // Ensure if orders_type is "1" (receive), orders_pricedelivery is 0
+        let finalPricedelivery = orders_type == 1 ? 0 : orders_pricedelivery;
+        orders_totalprice += finalPricedelivery;
 
+        // Check coupon
+        if (orders_couponid) {
+            const coupon = await Coupon.findById(orders_couponid);
+            if (!coupon || coupon.coupon_expiredate <= new Date() || coupon.coupon_count <= 0) {
+                return res.status(400).json({ status: httpStatusText.FAIL, message: 'Invalid or expired coupon' });
+            }
+            couponDiscount = coupon.coupon_discount;
+            orders_totalprice -= (orders_price * couponDiscount / 100);
 
-        let total = 0;
-        productPrices.forEach((product) => {
-            total += product.price;
-        });
-
-        const order = new Order({
-            user: req.user.id, // Assuming you have implemented user authentication
-            products,
-            total
-        });
-        const newOrder = await order.save();
-        res.status(201).json(newOrder);
-        
-    } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
-        
-    }
-};
-
-
-// Get order history for a user
-exports.getOrderHistory = async (req, res)=>{
-    try {
-        const orders = await Order.find({user: req.user.id}).populate('products', 'name price -_id');
-        res.status(200).json(orders);
-        
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-        
-    }
-
-};
-
-// there is a mistake in this function
-// Get details of a specific order
-exports.getOrderById = async (req, res) =>{
-    try {
-        const order = await Order.findById(req.params.id).populate('products', 'name price');
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
-        res.status(200).json(order);
-        
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-        
-    }
-
-};
-
-// Update the status of an order
-exports.updateOrderStatus = async (req, res) => {
-    try {
-        const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('products', 'name price -_id');
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
-        res.status(200).json(order);
-        
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-        
-    }
-
-};
-
-// Delete an order (admin or user who placed the order)
-exports.deleteOrder = async (req, res) => {
-    try {
-        const order = await Order.findByIdAndDelete(req.params.id);
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            // Update coupon count
+            coupon.coupon_count -= 1;
+            await coupon.save();
         }
 
-        // Check if user is admin or user who placed the order
-        if (req.user.role !== 'admin' && order.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Forbidden - Admin or user who placed the order access required' });
-        }
+        const newOrder = new Order({
+            orders_usersid,
+            orders_addressid,
+            orders_type,
+            orders_pricedelivery: finalPricedelivery,
+            orders_price,
+            orders_totalprice,
+            orders_couponid,
+            orders_paymeentmethod,
+            orders_status: 0 // Default status
+        });
 
-        //await order.remove();
-        res.json({ message: 'Order deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+        await newOrder.save();
+
+        // Update cart_orders in cartModel for the user
+        await Cart.updateMany({ user: orders_usersid, cart_orders: 0 }, { cart_orders: newOrder.orders_id });
+
+        res.status(201).json({ status: httpStatusText.SUCCESS, data: newOrder });
+
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
 };

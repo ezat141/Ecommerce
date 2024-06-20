@@ -16,7 +16,11 @@ const cartSchema = new mongoose.Schema({
             type: Number,
             default: 1
         }
-    }]
+    }],
+    cart_orders: {
+        type: Number,
+        default: 0 // 0 means inside cart
+    }
 });
 
 module.exports = mongoose.model('Cart', cartSchema);
