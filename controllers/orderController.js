@@ -41,9 +41,20 @@ exports.checkout = async (req, res) => {
         });
 
         await newOrder.save();
+        // Update cart_orders in cartModel for the user
+        await Cart.updateMany(
+            { user: orders_usersid, 'items.cart_orders': 0 },
+            { $set: { 'items.$[elem].cart_orders': newOrder._id } },
+            { arrayFilters: [{ 'elem.cart_orders': 0 }] }
+        );
 
         // Update cart_orders in cartModel for the user
-        await Cart.updateMany({ user: orders_usersid, cart_orders: 0 }, { cart_orders: newOrder.orders_id });
+        // await Cart.updateMany({ user: orders_usersid, cart_orders: 0 }, { cart_orders: newOrder.orders_id });
+        // Update cart items with order id
+        // await Cart.updateMany(
+        //     { user: orders_usersid, cart_orders: 0 },
+        //     { $set: { cart_orders: order.orders_id } }
+        // );
 
         res.status(201).json({ status: httpStatusText.SUCCESS, data: newOrder });
 
