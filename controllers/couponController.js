@@ -37,3 +37,22 @@ exports.checkCoupon = async (req, res) => {
         res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
 };
+
+// Insert Coupon endpoint
+exports.insertCoupon = async (req, res) => {
+    const { coupon_name, coupon_count, coupon_discount, coupon_expiredate } = req.body;
+
+    try {
+        const newCoupon = new Coupon({
+            coupon_name,
+            coupon_count,
+            coupon_discount,
+            coupon_expiredate
+        });
+
+        const savedCoupon = await newCoupon.save();
+        res.status(201).json({ status: httpStatusText.SUCCESS, data: savedCoupon });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+};

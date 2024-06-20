@@ -6,4 +6,6 @@ const couponController = require("../controllers/couponController");
 // Check coupon
 router.post("/check", couponController.checkCoupon);
 
+// Insert Coupon
+router.post("/insertCoupon", couponController.insertCoupon);
 module.exports = router;
