@@ -19,6 +19,10 @@ const cartSchema = new mongoose.Schema({
         cart_orders: {
             type: Number,
             default: 0 // 0 means inside cart
+        },
+        productsprice: {
+            type: Number,
+            default: 0
         }
     }],
     

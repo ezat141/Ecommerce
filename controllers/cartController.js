@@ -15,16 +15,26 @@ exports.getCart = async (req, res) => {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'Cart not found' });
         }
 
-        // Calculate total price and item count
-        const itemsPrice = cart.items.reduce((sum, item) => sum + item.product.product_price * item.quantity, 0);
-        const itemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
+        // // Calculate total price and item count
+        // const itemsPrice = cart.items.reduce((sum, item) => sum + item.product.product_price * item.quantity, 0);
+        // const itemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
+        
+        // Calculate total price, item count, and products price for each item
+        let itemsPrice = 0;
+        let itemCount = 0;
+
+        cart.items.forEach(item => {
+            item.productsprice = item.product.product_price * item.quantity;
+            itemsPrice += item.productsprice;
+            itemCount += item.quantity;
+        });
 
         res.status(200).json({
             status: httpStatusText.SUCCESS,
             cart: {
                 items: cart.items,
                 totalPrice: itemsPrice,
-                totalCount: itemCount
+                totalCount: itemCount,
             }
         });
     } catch (error) {
