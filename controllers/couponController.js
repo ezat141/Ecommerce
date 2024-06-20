@@ -28,7 +28,9 @@ exports.checkCoupon = async (req, res) => {
         res.status(200).json({
             status: httpStatusText.SUCCESS,
             data: {
+                coupon_id: coupon._id,
                 coupon_name: coupon.coupon_name,
+                coupon_count: coupon.coupon_count,
                 coupon_discount: coupon.coupon_discount,
                 coupon_expiredate: coupon.coupon_expiredate
             }
