@@ -44,7 +44,7 @@ exports.checkout = async (req, res) => {
         // Update cart_orders in cartModel for the user
         await Cart.updateMany(
             { user: orders_usersid, 'items.cart_orders': 0 },
-            { $set: { 'items.$[elem].cart_orders': newOrder._id } },
+            { $set: { 'items.$[elem].cart_orders': newOrder.orders_id } },
             { arrayFilters: [{ 'elem.cart_orders': 0 }] }
         );
 
