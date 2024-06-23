@@ -157,6 +157,10 @@ exports.getCountItems = async (req, res) => {
         if (!cart) {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'Cart not found' });
         }
+        // If the cart is found but contains no items
+        if (cart.items.length === 0) {
+            return res.status(200).json({ status: httpStatusText.SUCCESS, itemCount: 0 });
+        }
 
         // Find the count of the specific item in the cart
         // const itemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
