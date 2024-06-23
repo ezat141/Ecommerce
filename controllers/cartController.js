@@ -155,10 +155,6 @@ exports.getCountItems = async (req, res) => {
         const cart = await Cart.findOne({ user: cart_usersid, 'items.cart_orders': 0 });
 
         if (!cart) {
-            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Cart not found' });
-        }
-        // If the cart is found but contains no items
-        if (cart.items.length === 0) {
             return res.status(200).json({ status: httpStatusText.SUCCESS, itemCount: 0 });
         }
 
