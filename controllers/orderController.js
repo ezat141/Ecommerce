@@ -62,3 +62,14 @@ exports.checkout = async (req, res) => {
         res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
 };
+
+exports.viewOrders = async (req, res) => {
+    const {orders_usersid}  = req.body;
+    try {
+        const orders = await Order.find({orders_usersid});
+        res.status(200).json({ status: httpStatusText.SUCCESS, data: orders });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+
+};
