@@ -74,7 +74,6 @@ exports.viewOrders = async (req, res) => {
 
 };
 
-
 exports.ordersDetailsView = async (req, res) => {
     try {
         const { ordersid } = req.body;
