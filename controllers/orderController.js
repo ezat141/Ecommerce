@@ -73,3 +73,57 @@ exports.viewOrders = async (req, res) => {
     }
 
 };
+
+
+exports.ordersDetailsView = async (req, res) => {
+    try {
+        const { ordersid } = req.body;
+
+        // Find the cart items with the specified ordersid
+        const cart = await Cart.findOne({
+            'items.cart_orders': ordersid
+        }).populate({
+            path: 'items.product',
+            select: '_id product_name product_name_ar product_desc product_desc_ar image product_count product_active product_price product_discount product_cat product_date __v favorite'
+        });
+
+        if (!cart) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Order not found' });
+        }
+
+        // Filter items with the specific ordersid and calculate totals
+        let itemsPrice = 0;
+        let itemCount = 0;
+        const filteredItems = cart.items.filter(item => item.cart_orders === ordersid);
+        
+        if (filteredItems.length === 0) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'No items found for the given order' });
+        }
+
+        filteredItems.forEach(item => {
+            item.productsprice = item.product.product_price * item.quantity;
+            itemsPrice += item.productsprice;
+            itemCount += item.quantity;
+        });
+
+        const items = filteredItems.map(item => ({
+            product: item.product,
+            quantity: item.quantity,
+            cart_orders: item.cart_orders,
+            productsprice: item.productsprice,
+            _id: item._id
+        }));
+
+        const orderDetails = {
+            user: cart.user,
+            cart_orders: ordersid,
+            totalPrice: itemsPrice,
+            totalCount: itemCount,
+            items
+        };
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, orderDetails });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+};

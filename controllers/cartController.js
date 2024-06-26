@@ -99,29 +99,6 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-// exports.updateCartItem = async (req, res) => {
-//     try {
-//         const {productId, quantity} = req.body;
-//         const cart = await Cart.findOneAndUpdate(
-//             {
-//                 user: req.user.id,
-//                 'items.product': productId
-//             },
-//             {
-//                 $set: { 'items.$.quantity': quantity }
-//             },
-//             {
-//                 new: true
-//             }
-//         );
-//         res.json(cart);
-//     } catch (error) {
-//         res.status(500).json({
-//             message: error.message
-//         });
-
-//     }    
-// };
 
 exports.removeCartItem = async (req, res) => {
     try {
