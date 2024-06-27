@@ -136,14 +136,13 @@ exports.ordersDetailsView = async (req, res) => {
         }));
 
         const orderDetails = {
-            user: cart.user,
-            cart_orders: ordersid,
+            items,
             totalPrice: itemsPrice,
-            totalCount: itemCount,
-            items
+            totalCount: itemCount
+            
         };
 
-        res.status(200).json({ status: httpStatusText.SUCCESS, orderDetails });
+        res.status(200).json({ status: httpStatusText.SUCCESS, cart: orderDetails });
     } catch (error) {
         res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
