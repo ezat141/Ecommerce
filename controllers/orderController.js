@@ -66,7 +66,7 @@ exports.checkout = async (req, res) => {
 exports.viewOrders = async (req, res) => {
     const { orders_usersid } = req.body;
     try {
-        const orders = await Order.find({ orders_usersid }).populate('orders_addressid');
+        const orders = await Order.find({ orders_usersid, orders_status: { $ne: 4 } }).populate('orders_addressid');
 
         const formattedOrders = orders.map(order => ({
             _id: order._id,
@@ -143,6 +143,51 @@ exports.ordersDetailsView = async (req, res) => {
         };
 
         res.status(200).json({ status: httpStatusText.SUCCESS, cart: orderDetails });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+};
+
+exports.deleteOrders = async (req, res) => {
+    const { orders_id } = req.body;
+
+    try {
+        const order = await Order.findOne({ orders_id: orders_id });
+
+        if (!order) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Order not found' });
+        }
+
+        if (order.orders_status !== 0) {
+            return res.status(400).json({ status: httpStatusText.FAIL, message: 'Cannot delete order with status other than 0' });
+        }
+
+        await order.remove();
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, message: 'Order deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+};
+
+exports.archiveOrders = async (req, res) => {
+    const { orders_usersid } = req.body;
+
+    try {
+        const orders = await Order.find({ orders_usersid, orders_status: 4 });
+
+        if (orders.length === 0) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'No orders to archive' });
+        }
+
+        // for (const order of orders) {
+        //     // Archive the order
+        //     // Implement your archiving logic here
+        //     order.orders_status = 5; // Example status for archived
+        //     await order.save();
+        // }
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, message: 'Orders archived successfully' });
     } catch (error) {
         res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
