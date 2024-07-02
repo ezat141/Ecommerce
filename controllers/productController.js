@@ -77,6 +77,16 @@ exports.getProductsByCategory = async (req, res) => {
     }
 };
 
+exports.getOffers = async (req, res) => {
+    try {
+        const products = await Product.find({ product_discount: { $ne: 0 } });
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, data: products });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+};
+
 
 
 
