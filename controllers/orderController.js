@@ -218,7 +218,7 @@ exports.archiveOrders = async (req, res) => {
     }
 };
 
-exports.rateOrder = async (req, res){
+exports.rateOrder = async (req, res) => {
     const {orders_id, rating, comment}= req.body;
     try {
         const order = await orders.findOne({orders_id});
