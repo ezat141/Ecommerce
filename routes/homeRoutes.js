@@ -5,6 +5,7 @@ const httpStatusText = require("../utils/httpStatusText");
 // const { getAllProducts } = require('../controllers/productController');
 const Category = require('../models/Category');
 const Product = require('../models/Product');
+const Cart = require('../models/cartModel');
 const pipeline = require('../utils/pipeline');
 
 
@@ -57,19 +58,57 @@ const pipeline = require('../utils/pipeline');
 //         res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
 //     }
 // });
+
+//////////////////////////////////////////////////////////////////
+// router.get('/home', async (req, res) => {
+//     try {
+//         const categories = await Category.find({}, {"__v": false});
+//         const productsWithCategory = await Product.aggregate(pipeline);
+
+
+//         res.json({ status: httpStatusText.SUCCESS, categories, products: productsWithCategory });
+//     } catch (error) {
+//         console.error('Error in /home route:', error);
+//         res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
+//     }
+// });
+
 router.get('/home', async (req, res) => {
     try {
-        const categories = await Category.find({}, {"__v": false});
-        const productsWithCategory = await Product.aggregate(pipeline);
+        // Fetch categories
+        const categories = await Category.find({}, { "__v": false });
 
+        // Fetch top-selling products
+        const carts = await Cart.find({ 'items.cart_orders': { $ne: 0 } })
+            .populate('items.product')
+            .exec();
 
-        res.json({ status: httpStatusText.SUCCESS, categories, products: productsWithCategory });
+        // Count items and format response
+        const productMap = new Map();
+        carts.forEach(cart => {
+            cart.items.forEach(item => {
+                if(item.cart_orders !== 0){
+                    const product = item.product;
+                    if(product) {
+                        const count = productMap.get(product._id) || { count: 0, product: product };
+                        count.count += item.quantity;
+                        productMap.set(product._id, count);
+                    }
+                }
+                
+            });
+        });
+
+        const productsTopSelling = Array.from(productMap.values()).map(item => ({
+            ...item.product.toObject(),
+            countitems: item.count
+        })).sort((a, b) => b.countitems - a.countitems);
+
+        res.json({ status: httpStatusText.SUCCESS, categories, products: productsTopSelling });
     } catch (error) {
         console.error('Error in /home route:', error);
         res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
     }
 });
-
-
 
 module.exports = router;
