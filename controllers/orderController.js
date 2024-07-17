@@ -223,7 +223,7 @@ exports.archiveOrders = async (req, res) => {
 exports.rateOrder = async (req, res) => {
     const {orders_id, rating, comment}= req.body;
     try {
-        const order = await orders.findOne({orders_id});
+        const order = await Order.findOne({orders_id});
 
         if(!order){
             return res.status(404).json({status: httpStatusText.FAIL, message: 'Order not found'});
