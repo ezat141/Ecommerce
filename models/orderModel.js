@@ -38,6 +38,14 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Coupon'
     },
+    orders_rating: {
+        type: Number,
+        default: 0
+    },
+    orders_noterating: {
+        type: String,
+        default: 'none'
+    },
     orders_paymeentmethod: {
         type: Number,
         enum: [0, 1], // 0: cash, 1: payment card

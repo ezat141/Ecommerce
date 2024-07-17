@@ -81,6 +81,8 @@ exports.viewOrders = async (req, res) => {
             orders_paymeentmethod: order.orders_paymeentmethod,
             orders_status: order.orders_status,
             orders_datetime: order.orders_datetime,
+            orders_rating: order.orders_rating,
+            orders_noterating: order.orders_noterating,
             address_id: order.orders_addressid._id,
             address_usersid: order.orders_addressid.address_usersid,
             address_name: order.orders_addressid.address_name,
@@ -214,4 +216,23 @@ exports.archiveOrders = async (req, res) => {
     } catch (error) {
         res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
+};
+
+exports.rateOrder = async (req, res){
+    const {orders_id, rating, comment}= req.body;
+    try {
+        const order = await orders.findOne({orders_id});
+
+        if(!order){
+            return res.status(404).json({status: httpStatusText.FAIL, message: 'Order not found'});
+        }
+        
+        order.orders_rating = rating;
+        order.orders_noterating = comment;
+        await order.save();
+        res.status(200).json({ status: httpStatusText.SUCCESS, message: 'Order rated successfully' });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+
 };

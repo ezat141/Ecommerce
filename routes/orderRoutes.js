@@ -11,6 +11,7 @@ router.post("/ordersDetailsView", orderController.ordersDetailsView);
 router.post("/deleteOrder", orderController.deleteOrders);
 
 router.post("/archiveOrder", orderController.archiveOrders);
+router.post("/rateOrder", orderController.rateOrder);
 
 
 
