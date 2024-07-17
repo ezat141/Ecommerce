@@ -200,6 +200,8 @@ exports.archiveOrders = async (req, res) => {
             orders_price: order.orders_price,
             orders_totalprice: order.orders_totalprice,
             orders_couponid: order.orders_couponid,
+            orders_rating: order.orders_rating,
+            orders_noterating: order.orders_noterating,
             orders_paymeentmethod: order.orders_paymeentmethod,
             orders_status: order.orders_status,
             orders_datetime: order.orders_datetime,
