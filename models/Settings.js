@@ -14,6 +14,10 @@ const settingsSchema = new mongoose.Schema({
     settings_bodyhome: {
         type: String,
         required: true
+    },
+    settings_deliverytime: {
+        type: Number,
+        default: 30
     }
 });
 
