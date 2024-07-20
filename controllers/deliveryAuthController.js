@@ -3,7 +3,7 @@ const appError = require("../utils/appError");
 const httpStatusText = require("../utils/httpStatusText");
 const generateJWT = require("../utils/generateJWT");
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const Delivery = require("../models/Delivery");
 
 
