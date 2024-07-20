@@ -167,6 +167,3 @@ exports.deliveryArchive = async (req, res) => {
         res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
     }
 };
-
-    
-module.exports = router;
