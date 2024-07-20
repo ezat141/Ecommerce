@@ -60,8 +60,9 @@ const orderSchema = new mongoose.Schema({
         default: Date.now
     },
     orders_delivery:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Delivery'
+        type: Number,
+        unique: true,
+        default: 0
     }
 });
 
