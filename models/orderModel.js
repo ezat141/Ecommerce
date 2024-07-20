@@ -58,6 +58,10 @@ const orderSchema = new mongoose.Schema({
     orders_datetime: {
         type: Date,
         default: Date.now
+    },
+    orders_delivery:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Delivery'
     }
 });
 
