@@ -17,7 +17,6 @@ exports.getAllProducts = async (req, res) => {
     try {
         const products = await Product.find({}, {"__v": false, "favorite": false});
         // await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
-        res.status(200).json(products);
         res.status(200).json({status: httpStatusText.SUCCESS, data: products});
 
     } catch (error) {
