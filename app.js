@@ -5,6 +5,8 @@ const path = require("path"); // join a set of files together
 const url = process.env.MONGO_URL;
 const cors = require("cors");
 const httpStatusText = require("./utils/httpStatusText");
+const fs = require('fs');
+
 
 //const badyParser = require('bady-parser');
 const homeRoutes = require("./routes/homeRoutes");
