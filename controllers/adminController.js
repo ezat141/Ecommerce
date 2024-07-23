@@ -34,7 +34,7 @@ exports.loginAdmin = asyncWrapper(async (req, res, next) => {
     }
 
 
-    const isMatch = await bcrypt.compare(password, delivery.admin_password);
+    const isMatch = await bcrypt.compare(password, admin.admin_password);
     if (!isMatch) {
         const error = appError.create("invalid password", 400, httpStatusText.FAIL);
         return next(error);
