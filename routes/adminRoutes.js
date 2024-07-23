@@ -7,11 +7,11 @@ const upload = require('../middleware/multer');
 
 
 router.get('/', adminController.getAllProducts);
-router.post("/updateProduct", upload.single('image'), validateProduct, adminController.updateProduct);
+router.put("/updateProduct", upload.single('image'), validateProduct, adminController.updateProduct);
 
 router.post('/createProduct', upload.single('image'), validateProduct, adminController.createProduct);
 
-router.post("/deleteProduct", adminController.deleteProduct);
+router.delete("/deleteProduct", adminController.deleteProduct);
 
 
 module.exports = router
