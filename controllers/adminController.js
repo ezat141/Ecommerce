@@ -3,6 +3,8 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const httpStatusText = require("../utils/httpStatusText");
 const cloudinary = require("../utils/cloudinary");
+const upload = require('../middleware/multer');
+
 // const pipeline = require('../utils/pipeline');
 const mongoose = require("mongoose");
 
@@ -129,3 +131,109 @@ exports.deleteProduct = async (req, res) =>{
 
 };
 
+exports.getAllCategories = async (req, res) => {
+    try {
+        const categories = await Category.find({}, {"__v": false});
+        res.status(200).json({status: httpStatusText.SUCCESS, data: categories});
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+        
+    }
+};
+
+exports.createCategory = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+        // Check if file is uploaded
+        if (!req.file) {
+
+            return res.status(400).json({ message: 'Image file is required' });
+        }
+    
+        // Upload file to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path);
+    
+        // Remove file from local storage
+        fs.unlinkSync(req.file.path);
+    
+        // Create category with Cloudinary image URL
+        const { category_name, category_name_ar } = req.body;
+        const newCategory = new Category({
+
+            category_name,
+            category_name_ar,
+            image: result.secure_url // Use the Cloudinary image URL
+        });
+    
+        // Save category to database
+        await newCategory.save();
+    
+        // Return success response
+        res.status(201).json({ status: 'success', data: newCategory });
+    } catch (error) {
+        console.error('Error creating category:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.updateCategory = async (req, res) => {
+    const { category_name, category_name_ar, image } = req.body;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { id, ...updateData } = req.body; // Extract id from req.body and the rest as updateData
+
+    try {
+
+        // If an image file is uploaded, upload it to Cloudinary
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            // Remove file from local storage
+            fs.unlinkSync(req.file.path);
+            // Add the Cloudinary image URL to updateData
+            updateData.image = result.secure_url;
+        }
+
+        const category = await Category.findByIdAndUpdate(id, updateData, { new: true });
+        // const category = await Category.findByIdAndUpdate(
+        //     req.params.id,
+        //     { category_name, category_name_ar, image },
+        //     { new: true }
+        // );
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+        res.status(200).json({status: httpStatusText.SUCCESS, data: category});
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
+exports.deleteCategory = async (req, res) => {
+    try {
+
+        const { id } = req.body; // Get the product ID from req.body
+
+        if (!id) {
+            return res.status(400).json({ success: false, message: 'Category ID is required' });
+        }
+        const category = await Category.findByIdAndDelete(id);
+        if (!category) {
+            return res.status(404).json({ success: false, message: 'Category not found' });
+        }
+        res.status(200).json({ status: httpStatusText.SUCCESS, message: 'Category deleted successfully' });
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
