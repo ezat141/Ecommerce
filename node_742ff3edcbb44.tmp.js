@@ -28,15 +28,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Ensure the uploads directory exists
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-app.use("/uploads", express.static(uploadDir));
 // Routes
 app.use("/auth", authRoutes);
 app.use("/forgetPassword", forgetPasswordRoutes);

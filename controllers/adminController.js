@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 const fs = require('fs');
 
 
+
 exports.getAllProducts = async (req, res) => {
     // const query = req.query;
     // const limit = parseInt(query.limit) || 10;
