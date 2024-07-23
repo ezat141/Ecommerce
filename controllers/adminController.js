@@ -7,6 +7,7 @@ const asyncWrapper = require("../middleware/asyncWrapper");
 const appError = require("../utils/appError");
 const bcrypt = require("bcryptjs");
 const Admin = require("../models/Admin");
+const generateJWT = require("../utils/generateJWT");
 const upload = require('../middleware/multer');
 const fs = require('fs');
 
