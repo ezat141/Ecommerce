@@ -6,6 +6,8 @@ const upload = require('../middleware/multer');
 
 
 
+router.post("/login", adminController.loginAdmin);
+
 router.get('/getProducts', adminController.getAllProducts);
 router.put("/updateProduct", upload.single('image'), validateProduct, adminController.updateProduct);
 

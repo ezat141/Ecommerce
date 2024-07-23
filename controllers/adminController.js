@@ -3,12 +3,53 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const httpStatusText = require("../utils/httpStatusText");
 const cloudinary = require("../utils/cloudinary");
+const asyncWrapper = require("../middleware/asyncWrapper");
+const appError = require("../utils/appError");
+const bcrypt = require("bcryptjs");
+const Admin = require("../models/Admin");
 const upload = require('../middleware/multer');
-
-// const pipeline = require('../utils/pipeline');
-const mongoose = require("mongoose");
-
 const fs = require('fs');
+
+
+
+
+
+
+// Login user
+exports.loginAdmin = asyncWrapper(async (req, res, next) => {
+    const { email, password } = req.body;
+    if (!email && !password) {
+
+        const error = appError.create(
+        "email and password are required",
+        400,
+        httpStatusText.FAIL
+    );
+    return next(error);
+    }
+    const admin = await Admin.findOne({ admin_email: email });
+    if (!admin) {
+        const error = appError.create("admin not found", 400, httpStatusText.FAIL);
+        return next(error);
+    }
+
+
+    const isMatch = await bcrypt.compare(password, delivery.admin_password);
+    if (!isMatch) {
+        const error = appError.create("invalid password", 400, httpStatusText.FAIL);
+        return next(error);
+    }
+    // generate JWT token
+    const token = await generateJWT({
+
+        adminId: admin._id,
+    });
+    res
+    .status(200)
+    .json({ status: httpStatusText.SUCCESS, data: { token, admin } });
+});
+
+
 
 
 
