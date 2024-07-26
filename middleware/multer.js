@@ -17,11 +17,11 @@ const storage = multer.diskStorage({
 
 // Multer file filter
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+    if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(appError.create('file must be an image',400 ), false);
+        cb(new Error('File must be an image'), false);
     }
 };
 
