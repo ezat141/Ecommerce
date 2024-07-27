@@ -205,11 +205,12 @@ exports.createCategory = async (req, res) => {
         // fs.unlinkSync(req.file.path);
     
         // Create category with Cloudinary image URL
-        const { category_name, category_name_ar } = req.body;
+        const { category_name, category_name_ar, image } = req.body;
         const newCategory = new Category({
 
             category_name,
             category_name_ar,
+            image
             // image: result.secure_url // Use the Cloudinary image URL
         });
     
