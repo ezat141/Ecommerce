@@ -193,16 +193,16 @@ exports.createCategory = async (req, res) => {
     }
     try {
         // Check if file is uploaded
-        if (!req.file) {
+        // if (!req.file) {
 
-            return res.status(400).json({ message: 'Image file is required' });
-        }
+        //     return res.status(400).json({ message: 'Image file is required' });
+        // }
     
         // Upload file to Cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path);
+        // const result = await cloudinary.uploader.upload(req.file.path);
     
         // Remove file from local storage
-        fs.unlinkSync(req.file.path);
+        // fs.unlinkSync(req.file.path);
     
         // Create category with Cloudinary image URL
         const { category_name, category_name_ar, image } = req.body;
@@ -210,7 +210,7 @@ exports.createCategory = async (req, res) => {
 
             category_name,
             category_name_ar,
-            image: result.secure_url // Use the Cloudinary image URL
+            image
         });
     
         // Save category to database
