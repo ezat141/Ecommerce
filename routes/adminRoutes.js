@@ -20,7 +20,9 @@ router.get('/getCategories', adminController.getAllCategories);
 // router.post('/createCategory', upload.single('image'), validateCategory,adminController.createCategory);
 router.post('/createCategory', validateCategory,adminController.createCategory);
 
-router.put('/updateCategory', upload.single('image'), validateCategory, adminController.updateCategory);
+// router.put('/updateCategory', upload.single('image'), validateCategory, adminController.updateCategory);
+router.put('/updateCategory', validateCategory, adminController.updateCategory);
+
 router.delete('/deleteCategory', upload.single('image'), adminController.deleteCategory);
 
 

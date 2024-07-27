@@ -225,16 +225,14 @@ exports.createCategory = async (req, res) => {
 };
 
 exports.updateCategory = async (req, res) => {
-    const { category_name, category_name_ar, image } = req.body;
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { id, ...updateData } = req.body; // Extract id from req.body and the rest as updateData
+    const { id, category_name, category_name_ar, image } = req.body;
+    const updateData = { category_name, category_name_ar, image };
 
     try {
-
         // If an image file is uploaded, upload it to Cloudinary
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
@@ -243,13 +241,7 @@ exports.updateCategory = async (req, res) => {
             // Add the Cloudinary image URL to updateData
             updateData.image = result.secure_url;
         }
-
         const category = await Category.findByIdAndUpdate(id, updateData, { new: true });
-        // const category = await Category.findByIdAndUpdate(
-        //     req.params.id,
-        //     { category_name, category_name_ar, image },
-        //     { new: true }
-        // );
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
