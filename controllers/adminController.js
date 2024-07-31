@@ -147,17 +147,23 @@ exports.updateProduct = async (req, res) => {
     }
     const { id, product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_active, product_price, product_discount, product_cat} = req.body;
 
-    const updateData = { product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_active, product_price, product_discount, product_cat };
+    const updateData = { product_name, product_name_ar, product_desc,  product_desc_ar, product_count, product_active, product_price, product_discount, product_cat };
+    // If an image URL is provided in the body, add it to updateData
+    if (image) {
+        updateData.image = image;
+    }
+
+    
 
     try {
         // If an image file is uploaded, upload it to Cloudinary
-        if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            // Remove file from local storage
-            fs.unlinkSync(req.file.path);
-            // Add the Cloudinary image URL to updateData
-            updateData.image = result.secure_url;
-        }
+        // if (req.file) {
+        //     const result = await cloudinary.uploader.upload(req.file.path);
+        //     // Remove file from local storage
+        //     fs.unlinkSync(req.file.path);
+        //     // Add the Cloudinary image URL to updateData
+        //     updateData.image = result.secure_url;
+        // }
 
         const product = await Product.findByIdAndUpdate(id, updateData, { new: true });
         if (!product) {
@@ -254,17 +260,21 @@ exports.updateCategory = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
     const { id, category_name, category_name_ar, image } = req.body;
-    const updateData = { category_name, category_name_ar, image };
+    const updateData = { category_name, category_name_ar};
+    if (image) {
+        updateData.image = image;
+    }
+
 
     try {
-        // If an image file is uploaded, upload it to Cloudinary
-        if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            // Remove file from local storage
-            fs.unlinkSync(req.file.path);
-            // Add the Cloudinary image URL to updateData
-            updateData.image = result.secure_url;
-        }
+        // // If an image file is uploaded, upload it to Cloudinary
+        // if (req.file) {
+        //     const result = await cloudinary.uploader.upload(req.file.path);
+        //     // Remove file from local storage
+        //     fs.unlinkSync(req.file.path);
+        //     // Add the Cloudinary image URL to updateData
+        //     updateData.image = result.secure_url;
+        // }
         const category = await Category.findByIdAndUpdate(id, updateData, { new: true });
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
