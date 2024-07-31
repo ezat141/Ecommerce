@@ -60,7 +60,8 @@ exports.getAllProducts = async (req, res) => {
     // const page = parseInt(query.page) || 1;
     // const skip = (page -1) * limit;
     try {
-        const products = await Product.find({}, {"__v": false, "favorite": false});
+        const products = await Product.find({}, {"__v": false, "favorite": false})
+            .populate('product_cat', 'category_name category_name_ar category_id');
         // await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
         res.status(200).json({status: httpStatusText.SUCCESS, data: products});
 
@@ -80,18 +81,18 @@ exports.createProduct = async (req, res) => {
     
     try {
         // Check if file is uploaded
-        if (!req.file) {
+        // if (!req.file) {
 
-            return res.status(400).json({ message: 'Image file is required' });
-        }
+        //     return res.status(400).json({ message: 'Image file is required' });
+        // }
     
-        console.log('File received:', req.file);
-        // Upload file to Cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path);
-        console.log('Cloudinary upload result:', result);
+        // console.log('File received:', req.file);
+        // // Upload file to Cloudinary
+        // const result = await cloudinary.uploader.upload(req.file.path);
+        // console.log('Cloudinary upload result:', result);
     
-        // Remove file from local storage
-        fs.unlinkSync(req.file.path);
+        // // Remove file from local storage
+        // fs.unlinkSync(req.file.path);
 
         const { product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_price, product_discount, product_cat} = req.body;
 
@@ -100,7 +101,8 @@ exports.createProduct = async (req, res) => {
             product_name_ar,
             product_desc,
             product_desc_ar,
-            image: result.secure_url, // Use the Cloudinary image URL
+            image,
+            // image: result.secure_url, // Use the Cloudinary image URL
             // image: req.file ? req.file.path : null,
             product_count,
             product_price,
@@ -123,7 +125,9 @@ exports.updateProduct = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { id, ...updateData } = req.body; // Extract id from req.body and the rest as updateData
+    const { id, product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_price, product_discount, product_cat} = req.body;
+
+    const updateData = { product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_price, product_discount, product_cat };
 
     try {
         // If an image file is uploaded, upload it to Cloudinary
