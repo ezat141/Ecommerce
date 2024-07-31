@@ -59,11 +59,31 @@ exports.getAllProducts = async (req, res) => {
     // const limit = parseInt(query.limit) || 10;
     // const page = parseInt(query.page) || 1;
     // const skip = (page -1) * limit;
+    // await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
+
     try {
         const products = await Product.find({}, {"__v": false, "favorite": false})
-            .populate('product_cat', 'category_name category_name_ar category_id');
-        // await Product.find({}, {"__v": false}).limit(limit).skip(skip).exec();
-        res.status(200).json({status: httpStatusText.SUCCESS, data: products});
+            .populate('product_cat');
+            const formattedProducts = products.map(product => ({
+                _id: product._id,
+                product_name: product.product_name,
+                product_name_ar: product.product_name_ar,
+                product_desc: product.product_desc,
+                product_desc_ar: product.product_desc_ar,
+                image: product.image,
+                product_count: product.product_count,
+                product_active: product.product_active,
+                product_price: product.product_price,
+                product_discount: product.product_discount,
+                product_date: product.product_date,
+                favorite: product.favorite,
+                category_id: product.product_cat._id,
+                category_name: product.product_cat.category_name,
+                category_name_ar: product.product_cat.category_name_ar,
+                category_id: product.product_cat._id
+                
+            }));
+        res.status(200).json({status: httpStatusText.SUCCESS, data: formattedProducts});
 
     } catch (error) {
         res.status(500).json({
@@ -125,9 +145,9 @@ exports.updateProduct = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { id, product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_price, product_discount, product_cat} = req.body;
+    const { id, product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_active, product_price, product_discount, product_cat} = req.body;
 
-    const updateData = { product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_price, product_discount, product_cat };
+    const updateData = { product_name, product_name_ar, product_desc,  product_desc_ar, image, product_count, product_active, product_price, product_discount, product_cat };
 
     try {
         // If an image file is uploaded, upload it to Cloudinary
