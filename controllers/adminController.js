@@ -354,7 +354,13 @@ exports.viewPending = async (req, res) => {
 // New endpoint to view accepted orders (orders_status != 0 and orders_status != 4)
 exports.viewAccepted = async (req, res) => {
     try {
-        const acceptedOrders = await Order.find({ orders_status: { $ne: 0, $ne: 4 } }).populate('orders_addressid');
+        const acceptedOrders = await Order.find({ 
+            $and: [
+
+                { orders_status: { $ne: 0 } },
+                { orders_status: { $ne: 4 } }
+            ]
+        } ).populate('orders_addressid');
 
         if (!acceptedOrders) {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'No accepted orders found' });
