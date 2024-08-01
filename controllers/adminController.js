@@ -8,6 +8,9 @@ const appError = require("../utils/appError");
 const bcrypt = require("bcryptjs");
 const Admin = require("../models/Admin");
 const generateJWT = require("../utils/generateJWT");
+const Order = require('../models/orderModel');
+const Cart = require('../models/cartModel');
+
 const upload = require('../middleware/multer');
 const fs = require('fs');
 
@@ -294,5 +297,239 @@ exports.deleteCategory = async (req, res) => {
         res.status(500).json({
             message: error.message
         });
+    }
+};
+
+exports.viewPending = async (req, res) => {
+    try {
+        const pendingOrders = await Order.find({ orders_status: 0 }).populate('orders_addressid');
+
+        if (!pendingOrders) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'No pending orders found' });
+        }
+
+        const formattedOrders = pendingOrders.map(order => ({
+            _id: order._id,
+            orders_id: order.orders_id,
+            orders_usersid: order.orders_usersid,
+            orders_addressid: order.orders_addressid._id,
+            orders_type: order.orders_type,
+            orders_pricedelivery: order.orders_pricedelivery,
+            orders_price: order.orders_price,
+            orders_totalprice: order.orders_totalprice,
+            orders_couponid: order.orders_couponid,
+            orders_paymeentmethod: order.orders_paymeentmethod,
+            orders_status: order.orders_status,
+            orders_datetime: order.orders_datetime,
+            orders_rating: order.orders_rating,
+            orders_noterating: order.orders_noterating,
+            address_id: order.orders_addressid._id,
+            address_usersid: order.orders_addressid.address_usersid,
+            address_name: order.orders_addressid.address_name,
+            address_city: order.orders_addressid.address_city,
+            address_street: order.orders_addressid.address_street,
+            address_lat: order.orders_addressid.address_lat,
+            address_long: order.orders_addressid.address_long,
+        }));
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, data: formattedOrders });
+        
+    } catch (error) {
+        console.error('Error in /viewPending route:', error);
+        res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
+    }
+};
+
+
+// New endpoint to view accepted orders (orders_status != 0 and orders_status != 4)
+exports.viewAccepted = async (req, res) => {
+    try {
+        const acceptedOrders = await Order.find({ orders_status: { $ne: 0, $ne: 4 } }).populate('orders_addressid');
+
+        if (!acceptedOrders) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'No accepted orders found' });
+        }
+
+        const formattedOrders = acceptedOrders.map(order => ({
+            _id: order._id,
+            orders_id: order.orders_id,
+            orders_usersid: order.orders_usersid,
+            orders_addressid: order.orders_addressid._id,
+            orders_type: order.orders_type,
+            orders_pricedelivery: order.orders_pricedelivery,
+            orders_price: order.orders_price,
+            orders_totalprice: order.orders_totalprice,
+            orders_couponid: order.orders_couponid,
+            orders_paymeentmethod: order.orders_paymeentmethod,
+            orders_status: order.orders_status,
+            orders_datetime: order.orders_datetime,
+            orders_rating: order.orders_rating,
+            orders_noterating: order.orders_noterating,
+            address_id: order.orders_addressid._id,
+            address_usersid: order.orders_addressid.address_usersid,
+            address_name: order.orders_addressid.address_name,
+            address_city: order.orders_addressid.address_city,
+            address_street: order.orders_addressid.address_street,
+            address_lat: order.orders_addressid.address_lat,
+            address_long: order.orders_addressid.address_long,
+        }));
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, data: formattedOrders });
+    } catch (error) {
+        console.error('Error in /viewAccepted route:', error);
+        res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
+    }
+};
+
+
+exports.ordersDetailsView = async (req, res) => {
+    try {
+        const { ordersid } = req.body;
+
+        // Find the cart items with the specified ordersid
+        const cart = await Cart.findOne({
+            'items.cart_orders': ordersid
+        }).populate({
+            path: 'items.product',
+            select: '_id product_name product_name_ar product_desc product_desc_ar image product_count product_active product_price product_discount product_cat product_date __v favorite'
+        });
+
+        if (!cart) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Order not found' });
+        }
+
+        // Filter items with the specific ordersid and calculate totals
+        let itemsPrice = 0;
+        let itemCount = 0;
+        const filteredItems = cart.items.filter(item => item.cart_orders === ordersid);
+        
+        if (filteredItems.length === 0) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'No items found for the given order' });
+        }
+
+        filteredItems.forEach(item => {
+            item.productsprice = item.product.product_price * item.quantity;
+            itemsPrice += item.productsprice;
+            itemCount += item.quantity;
+        });
+
+        const items = filteredItems.map(item => ({
+            product: item.product,
+            quantity: item.quantity,
+            cart_orders: item.cart_orders,
+            productsprice: item.productsprice,
+            _id: item._id
+        }));
+
+        const orderDetails = {
+            items,
+            totalPrice: itemsPrice,
+            totalCount: itemCount
+            
+        };
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, cart: orderDetails });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
+    }
+};
+
+// New endpoint to prepare order
+exports.preparedOrder = async (req, res) => {
+    const { orderid, ordertype } = req.body;
+
+    try {
+        // Find the order and check if the status is 1
+        const order = await Order.findOne({ orders_id: orderid, orders_status: 1 });
+
+        if (!order) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Order not found or not in the correct status.' });
+        }
+
+        // Update the order's status based on the orders_type
+        if (ordertype === 0) {
+            order.orders_status = 2;
+        } else {
+            order.orders_status = 4;
+        }
+
+        await order.save();
+
+        res.json({ status: httpStatusText.SUCCESS, message: 'Order prepared and status updated.' });
+    } catch (error) {
+        console.error('Error in /preparedOrder route:', error);
+        res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
+    }
+};
+
+
+exports.adminApprove = async (req, res) => {
+    const { orderid } = req.body;
+
+    try {
+        // Find the order and check if the status is 2
+        const order = await Order.findOne({ orders_id: orderid, orders_status: 0 });
+
+        if (!order) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'Order not found or not in the correct status.' });
+        }
+
+        order.orders_status = 1;
+
+        await order.save();
+
+        res.json({ status: httpStatusText.SUCCESS, message: 'Admin approved and order updated.' });
+    } catch (error) {
+        console.error('Error in /adminApprove route:', error);
+        res.status(500).json({ status: httpStatusText.FAIL, message: 'Internal Server Error' });
+    }
+};
+
+
+exports.archiveOrders = async (req, res) => {
+    // const { orders_usersid } = req.body;
+
+    try {
+        const orders = await Order.find({ orders_status: 4 }).populate('orders_addressid');
+
+        if (orders.length === 0) {
+            return res.status(404).json({ status: httpStatusText.FAIL, message: 'No orders to archive' });
+        }
+
+        // for (const order of orders) {
+        //     // Archive the order
+        //     // Implement your archiving logic here
+        //     order.orders_status = 5; // Example status for archived
+        //     await order.save();
+        // }
+
+        // Prepare the response data
+        const responseData = orders.map(order => ({
+            _id: order._id,
+            orders_id: order.orders_id,
+            orders_usersid: order.orders_usersid,
+            orders_addressid: order.orders_addressid._id,
+            orders_type: order.orders_type,
+            orders_pricedelivery: order.orders_pricedelivery,
+            orders_price: order.orders_price,
+            orders_totalprice: order.orders_totalprice,
+            orders_couponid: order.orders_couponid,
+            orders_rating: order.orders_rating,
+            orders_noterating: order.orders_noterating,
+            orders_paymeentmethod: order.orders_paymeentmethod,
+            orders_status: order.orders_status,
+            orders_datetime: order.orders_datetime,
+            address_id: order.orders_addressid._id,
+            address_usersid: order.orders_addressid.address_usersid,
+            address_name: order.orders_addressid.address_name,
+            address_city: order.orders_addressid.address_city,
+            address_street: order.orders_addressid.address_street,
+            address_lat: order.orders_addressid.address_lat,
+            address_long: order.orders_addressid.address_long
+        }));
+
+        res.status(200).json({ status: httpStatusText.SUCCESS, data: responseData });
+    } catch (error) {
+        res.status(500).json({ status: httpStatusText.FAIL, message: error.message });
     }
 };

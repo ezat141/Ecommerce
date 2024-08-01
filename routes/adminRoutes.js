@@ -5,9 +5,10 @@ const { validateProduct, validateCategory } = require('../middleware/validationM
 const upload = require('../middleware/multer');
 
 
-
+// Login Admin
 router.post("/login", adminController.loginAdmin);
 
+// Product Routes
 router.get('/getProducts', adminController.getAllProducts);
 router.put("/updateProduct", validateProduct, adminController.updateProduct);
 
@@ -17,6 +18,7 @@ router.post('/createProduct', validateProduct, adminController.createProduct);
 
 router.delete("/deleteProduct", adminController.deleteProduct);
 
+// Category Routes
 router.get('/getCategories', adminController.getAllCategories);
 
 // router.post('/createCategory', upload.single('image'), validateCategory,adminController.createCategory);
@@ -27,5 +29,12 @@ router.put('/updateCategory', validateCategory, adminController.updateCategory);
 
 router.delete('/deleteCategory', upload.single('image'), adminController.deleteCategory);
 
+// Order Routes
+router.get('/ordersPending', adminController.viewPending);
+router.get('/ordersAccepted', adminController.viewAccepted);
+router.post("/ordersDetailsView", adminController.ordersDetailsView);
+router.post('/ordersPrepared', adminController.preparedOrder);
+router.post('/ordersApprove', adminController.adminApprove);
+router.get('/ordersArchive', adminController.archiveOrders);
 
 module.exports = router
