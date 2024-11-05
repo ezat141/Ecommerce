@@ -123,6 +123,7 @@ exports.ordersDetailsView = async (req, res) => {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'Order not found' });
         }
 
+        // Filter items by the specified ordersid and calculate totals using cartItemsPrice
         // Filter items with the specific ordersid and calculate totals
         let itemsPrice = 0;
         let itemCount = 0;
@@ -132,17 +133,34 @@ exports.ordersDetailsView = async (req, res) => {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'No items found for the given order' });
         }
 
+        // Use cartItemsPrice if it’s already populated, otherwise set it to the current product price
+        // filteredItems.forEach(item => {
+        //     item.productsprice = item.product.product_price * item.quantity;
+        //     itemsPrice += item.productsprice;
+        //     itemCount += item.quantity;
+        // });
+//////////////////////////////////////////////////////////////////////
         filteredItems.forEach(item => {
-            item.productsprice = item.product.product_price * item.quantity;
-            itemsPrice += item.productsprice;
+            if (!item.cartItemsPrice) {
+                item.cartItemsPrice = item.product.product_price; // Set it to the current price if not populated
+            }
+            itemsPrice += item.cartItemsPrice * item.quantity;
             itemCount += item.quantity;
         });
+
+        // const items = filteredItems.map(item => ({
+        //     product: item.product,
+        //     quantity: item.quantity,
+        //     cart_orders: item.cart_orders,
+        //     productsprice: item.productsprice,
+        //     _id: item._id
+        // }));
 
         const items = filteredItems.map(item => ({
             product: item.product,
             quantity: item.quantity,
             cart_orders: item.cart_orders,
-            productsprice: item.productsprice,
+            cartItemsPrice: item.cartItemsPrice,  // Use cartItemsPrice here
             _id: item._id
         }));
 
