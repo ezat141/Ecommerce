@@ -1,6 +1,7 @@
 const Order = require('../models/orderModel');
 const Coupon = require('../models/couponModel');
 const Cart = require('../models/cartModel');
+const Product = require('../models/Product');
 const httpStatusText = require("../utils/httpStatusText");
 
 exports.checkout = async (req, res) => {
@@ -9,12 +10,12 @@ exports.checkout = async (req, res) => {
     try {
         let orders_totalprice = orders_price;
         let couponDiscount = 0;
-
+        
         // Ensure if orders_type is "1" (receive), orders_pricedelivery is 0
         let finalPricedelivery = orders_type == 1 ? 0 : orders_pricedelivery;
         orders_totalprice += finalPricedelivery;
 
-        // Check coupon
+        // Check coupon if provided
         if (orders_couponid) {
             const coupon = await Coupon.findById(orders_couponid);
             if (!coupon || coupon.coupon_expiredate <= new Date() || coupon.coupon_count <= 0) {
@@ -41,20 +42,28 @@ exports.checkout = async (req, res) => {
         });
 
         await newOrder.save();
-        // Update cart_orders in cartModel for the user
-        await Cart.updateMany(
-            { user: orders_usersid, 'items.cart_orders': 0 },
-            { $set: { 'items.$[elem].cart_orders': newOrder.orders_id } },
-            { arrayFilters: [{ 'elem.cart_orders': 0 }] }
-        );
 
+        const cart = await Cart.findOne({ user: orders_usersid});
+
+        if (cart) {
+            for (let item of cart.items) {
+                const product = await Product.findById(item.product);
+                item.cart_orders = newOrder.orders_id;
+                // Store price at checkout
+                item.cartItemsPrice = product.product_price; 
+
+            }
+            await cart.save();
+
+
+        }
         // Update cart_orders in cartModel for the user
-        // await Cart.updateMany({ user: orders_usersid, cart_orders: 0 }, { cart_orders: newOrder.orders_id });
-        // Update cart items with order id
         // await Cart.updateMany(
-        //     { user: orders_usersid, cart_orders: 0 },
-        //     { $set: { cart_orders: order.orders_id } }
+        //     { user: orders_usersid, 'items.cart_orders': 0 },
+        //     { $set: { 'items.$[elem].cart_orders': newOrder.orders_id } },
+        //     { arrayFilters: [{ 'elem.cart_orders': 0 }] }
         // );
+//////////////////////////////////////////////////////////////////////////////////////
 
         res.status(201).json({ status: httpStatusText.SUCCESS, data: newOrder });
 
