@@ -49,7 +49,7 @@ exports.checkout = async (req, res) => {
         const cart = await Cart.findOne({ user: orders_usersid }).populate('items.product');
         if (cart && cart.items.length > 0) {
             cart.items.forEach(item => {
-                item.productsprice = item.product.product_price; // Lock the price at checkout
+                item.productsprice = item.product.product_price * item.quantity; // Lock the price at checkout
                 item.cart_orders = newOrder.orders_id; // Associate with current order
             });
 
@@ -134,7 +134,7 @@ exports.ordersDetailsView = async (req, res) => {
         }
 
         filteredItems.forEach(item => {
-            itemsPrice += item.productsprice * item.quantity;
+            itemsPrice += item.productsprice;
             itemCount += item.quantity;
         });
 
