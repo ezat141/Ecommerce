@@ -29,6 +29,8 @@ exports.checkout = async (req, res) => {
             await coupon.save();
         }
 
+
+
         const newOrder = new Order({
             orders_usersid,
             orders_addressid,
@@ -43,21 +45,20 @@ exports.checkout = async (req, res) => {
 
         await newOrder.save();
 
-        const cart = await Cart.findOne({ user: orders_usersid});
+        //Update cart items to associate with the order and lock in product prices
+        const cart = await Cart.findOne({ user: orders_usersid }).populate('items.product');
+        if (cart && cart.items.length > 0) {
+            cart.items.forEach(item => {
+                item.productsprice = item.product.product_price; // Lock the price at checkout
+                item.cart_orders = newOrder.orders_id; // Associate with current order
+            });
 
-        if (cart) {
-            for (let item of cart.items) {
-                const product = await Product.findById(item.product);
-                item.cart_orders = newOrder.orders_id;
-                // Store price at checkout
-                item.productsprice = product.product_price; 
-
-            }
-            await cart.save();
-
-
+            await cart.save(); // Save updated cart items with order association
         }
-        // Update cart_orders in cartModel for the user
+
+
+        
+        //Update cart_orders in cartModel for the user
         // await Cart.updateMany(
         //     { user: orders_usersid, 'items.cart_orders': 0 },
         //     { $set: { 'items.$[elem].cart_orders': newOrder.orders_id } },
@@ -124,7 +125,6 @@ exports.ordersDetailsView = async (req, res) => {
         }
 
         // Filter items by the specified ordersid and calculate totals using productsprice
-        // Filter items with the specific ordersid and calculate totals
         let itemsPrice = 0;
         let itemCount = 0;
         const filteredItems = cart.items.filter(item => item.cart_orders === ordersid);
@@ -133,36 +133,20 @@ exports.ordersDetailsView = async (req, res) => {
             return res.status(404).json({ status: httpStatusText.FAIL, message: 'No items found for the given order' });
         }
 
-        // Use productsprice if it’s already populated, otherwise set it to the current product price
-        // filteredItems.forEach(item => {
-        //     item.productsprice = item.product.product_price * item.quantity;
-        //     itemsPrice += item.productsprice;
-        //     itemCount += item.quantity;
-        // });
-//////////////////////////////////////////////////////////////////////
         filteredItems.forEach(item => {
-            if (!item.productsprice) {
-                item.productsprice = item.product.product_price; // Set it to the current price if not populated
-            }
             itemsPrice += item.productsprice * item.quantity;
             itemCount += item.quantity;
         });
-
-        // const items = filteredItems.map(item => ({
-        //     product: item.product,
-        //     quantity: item.quantity,
-        //     cart_orders: item.cart_orders,
-        //     productsprice: item.productsprice,
-        //     _id: item._id
-        // }));
 
         const items = filteredItems.map(item => ({
             product: item.product,
             quantity: item.quantity,
             cart_orders: item.cart_orders,
-            productsprice: item.productsprice,  // Use productsprice here
+            productsprice: item.productsprice,
             _id: item._id
         }));
+
+
 
         const orderDetails = {
             items,
