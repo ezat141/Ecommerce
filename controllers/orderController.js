@@ -45,25 +45,15 @@ exports.checkout = async (req, res) => {
 
         await newOrder.save();
 
-        //Update cart items to associate with the order and lock in product prices
-        const cart = await Cart.findOne({ user: orders_usersid }).populate('items.product');
-        if (cart && cart.items.length > 0) {
-            cart.items.forEach(item => {
-                item.productsprice = item.product.product_price * item.quantity; // Lock the price at checkout
-                item.cart_orders = newOrder.orders_id; // Associate with current order
-            });
-
-            await cart.save(); // Save updated cart items with order association
-        }
 
 
         
         //Update cart_orders in cartModel for the user
-        // await Cart.updateMany(
-        //     { user: orders_usersid, 'items.cart_orders': 0 },
-        //     { $set: { 'items.$[elem].cart_orders': newOrder.orders_id } },
-        //     { arrayFilters: [{ 'elem.cart_orders': 0 }] }
-        // );
+        await Cart.updateMany(
+            { user: orders_usersid, 'items.cart_orders': 0 },
+            { $set: { 'items.$[elem].cart_orders': newOrder.orders_id } },
+            { arrayFilters: [{ 'elem.cart_orders': 0 }] }
+        );
 //////////////////////////////////////////////////////////////////////////////////////
 
         res.status(201).json({ status: httpStatusText.SUCCESS, data: newOrder });
@@ -134,6 +124,7 @@ exports.ordersDetailsView = async (req, res) => {
         }
 
         filteredItems.forEach(item => {
+            item.productsprice = item.product.product_price * item.quantity;
             itemsPrice += item.productsprice;
             itemCount += item.quantity;
         });
